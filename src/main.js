@@ -1,0 +1,148 @@
+import './style.css';
+import './story.css';
+import { profile, projects, nova, experiments, links } from './data.js';
+import { story } from './story.js';
+import { soundtrack } from './music.js';
+
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
+const app = $('#app');
+const external = (url, label = 'OPEN') => url ? `<a class="text-link" href="${url}" target="_blank" rel="noreferrer">${label}<span aria-hidden="true">↗</span></a>` : '';
+
+// ── Persistent audio state (survives re-renders on hash navigation) ──
+const audioState = {
+  trackId: soundtrack[0].id,
+  playing: false,
+  audio: undefined,
+  context: undefined,
+  master: undefined,
+  oscillators: [],
+};
+
+function stopAudio() {
+  if (audioState.audio) {
+    audioState.audio.pause();
+    audioState.audio.currentTime = 0;
+    audioState.audio = undefined;
+  }
+  if (audioState.context) {
+    audioState.oscillators.forEach(o => o.stop());
+    audioState.oscillators = [];
+    audioState.context.close();
+    audioState.context = undefined;
+    audioState.master = undefined;
+  }
+  audioState.playing = false;
+}
+
+async function startAudio() {
+  const track = soundtrack.find(t => t.id === audioState.trackId);
+  if (!track) return '';
+  if (track.id === 'ambient') {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return 'This browser does not support generated ambience.';
+    audioState.context = new AudioContextClass();
+    audioState.master = audioState.context.createGain();
+    audioState.master.gain.value = 0.025;
+    audioState.master.connect(audioState.context.destination);
+    [110, 164.81].forEach((frequency, index) => {
+      const oscillator = audioState.context.createOscillator();
+      const volume = audioState.context.createGain();
+      oscillator.type = 'sine';
+      oscillator.frequency.value = frequency;
+      volume.gain.value = index ? 0.35 : 0.65;
+      oscillator.connect(volume).connect(audioState.master);
+      oscillator.start();
+      audioState.oscillators.push(oscillator);
+    });
+    await audioState.context.resume();
+    audioState.playing = true;
+    return 'Original low-volume ambient tones. Choose SOUND OFF to stop.';
+  }
+  if (!track.src) {
+    return `No audio file is configured for ${track.label}. Add a licensed file path in src/music.js.`;
+  }
+  audioState.audio = new Audio(track.src);
+  audioState.audio.loop = true;
+  audioState.audio.volume = 0.45;
+  try {
+    await audioState.audio.play();
+    audioState.playing = true;
+    return `Playing ${track.label}. Choose SOUND OFF to stop.`;
+  } catch {
+    audioState.audio = undefined;
+    return `Could not play ${track.label}. Check the audio file path and format in src/music.js.`;
+  }
+}
+
+function currentTrack() {
+  return soundtrack.find(t => t.id === audioState.trackId) || soundtrack[0];
+}
+
+function syncSoundUI(note) {
+  const track = currentTrack();
+  $$('.sound-toggle').forEach(btn => {
+    btn.textContent = audioState.playing ? 'SOUND ON' : 'SOUND OFF';
+    btn.setAttribute('aria-pressed', String(audioState.playing));
+  });
+  $$('.track-name').forEach(el => { el.textContent = track.label.toUpperCase(); });
+  $$('.track-select').forEach(sel => { sel.value = track.id; });
+  if (note !== undefined) {
+    $$('.sound-note').forEach(el => { el.textContent = note; });
+  }
+}
+
+function soundBar({ compact = false } = {}) {
+  const track = currentTrack();
+  return `<div class="sound-bar ${compact ? 'sound-bar--compact' : ''}">
+    ${compact ? '' : `<div><p class="eyebrow">SOUND</p><strong class="track-name">${track.label.toUpperCase()}</strong></div>`}
+    <button class="sound-toggle" type="button" aria-pressed="${audioState.playing}">${audioState.playing ? 'SOUND ON' : 'SOUND OFF'}</button>
+    ${compact ? '' : `<label class="sr-only" for="track-select">Choose soundtrack</label><select class="track-select">${soundtrack.map(t => `<option value="${t.id}" ${t.id === track.id ? 'selected' : ''}>${t.label}${t.id !== 'ambient' && !t.src ? ' / FILE NEEDED' : ''}</option>`).join('')}</select>`}
+    ${compact ? '' : `<p class="sound-note"></p>`}
+  </div>`;
+}
+
+function nav() {
+  return `<aside class="rail"><a class="wordmark" href="#top">${profile.name.toUpperCase()}<sup>®</sup></a><p class="rail-role">${profile.role}</p>${soundBar()}<nav aria-label="Primary"><a href="#work">01 / WORK</a><a href="#story">02 / STORY</a><a href="#nova">03 / NOVA</a><a href="#lab">04 / LAB</a><a href="#about">05 / ABOUT</a><a href="#links">06 / LINKS</a></nav><p class="rail-note">Based online.<br>Working in public.</p></aside>`;
+}
+function mobileBar() {
+  return `<div class="mobile-bar"><a href="#top">SHIJIN</a>${soundBar({ compact: true })}<a href="#work">INDEX ↓</a></div>`;
+}
+function status() { return `<div class="top-status"><span class="status-dot"></span><span>NOW</span><strong>${profile.current}</strong></div>`; }
+function cover(p) { return `<div class="project-cover" aria-hidden="true"><span>${p.number}</span><b>${p.name}</b><i>${p.type}</i></div>`; }
+function projectRow(p) { return `<article class="project-row" data-tags="${p.tags.join(' ')}"><div class="project-id">${p.number}</div><div class="project-main"><p class="eyebrow">${p.type} / ${p.year}</p><h3>${p.name}</h3><p>${p.description}</p><div class="stack">${p.stack.map(x => `<span>${x}</span>`).join('')}</div></div>${cover(p)}<div class="project-meta"><span class="live-dot"></span>${p.status}<button class="project-open" data-project="${p.id}">READ PROJECT <span>→</span></button>${external(p.url, 'VISIT LIVE')}</div></article>`; }
+function home() {
+  return `<div class="site-shell" id="top">${nav()}<main id="content">${mobileBar()}<section class="intro" aria-labelledby="intro-heading">${status()}<p class="eyebrow">PERSONAL ARCHIVE / 2026</p><h1 id="intro-heading">${profile.name.toUpperCase()}<br><em>makes systems</em><br>to inspect.</h1><div class="intro-bottom"><p>${profile.introduction}</p><div class="quick-links"><a href="#work">[ PROJECTS ]</a><a href="#nova">[ NOVA ]</a><a href="#lab">[ LAB ]</a><a href="#about">[ ABOUT ]</a></div></div></section><section class="section" id="work"><div class="section-head"><p class="eyebrow">01 / SELECTED WORK</p><p>Published builds &amp; ongoing systems</p></div><div class="archive-intro"><h2>An archive of things<br>that made it out.</h2><p>Not every experiment becomes a project. These did.</p></div><div class="project-index">${projects.map(projectRow).join('')}</div><a href="#directory" class="all-link">VIEW COMPLETE INDEX <span>↓</span></a></section><section class="section nova-section" id="nova"><div class="section-head"><p class="eyebrow">02 / ONGOING SYSTEM</p><p>${nova.subtitle}</p></div><div class="nova-grid"><div><h2>${nova.title}</h2><p class="nova-lede">${nova.description}</p><div class="systems">${nova.systems.map(x => `<span>${x}</span>`).join('')}</div></div><ol class="timeline">${nova.stages.map(s => `<li><span>${s[0]}</span><strong>${s[1]}</strong><i>${s[2]}</i></li>`).join('')}</ol></div></section><section class="section lab-section" id="lab"><div class="section-head"><p class="eyebrow">03 / LAB NOTEBOOK</p><p>Unpolished on purpose</p></div><div class="lab-list">${experiments.map(x => `<article><p>LAB / ${x.number}</p><h3>${x.name}</h3><span>${x.stack}</span><em><i></i>${x.status}</em></article>`).join('')}</div></section><section class="section directory" id="directory"><div class="section-head"><p class="eyebrow">04 / ALL BUILDS</p><p>${projects.length} PUBLIC ENTRIES</p></div><div class="filters" role="group" aria-label="Filter builds"><button class="active" data-filter="ALL">ALL</button><button data-filter="APPS">APPS</button><button data-filter="WEBSITES">WEBSITES</button><button data-filter="AI">AI</button><button data-filter="EXPERIMENTS">EXPERIMENTS</button><button data-filter="GAMES">GAMES</button><button data-filter="TOOLS">TOOLS</button></div><div class="directory-list">${projects.map(p => `<a href="${p.url}" target="_blank" rel="noreferrer" class="directory-item" data-tags="${p.tags.join(' ')}"><span>${p.number}</span><b>${p.name}</b><em>${p.type}</em><i>${p.status}</i><span>↗</span></a>`).join('')}</div></section><section class="section about-section" id="about"><div class="section-head"><p class="eyebrow">05 / ABOUT</p><p>${profile.role}</p></div><div class="about-grid"><h2>One person,<br>many open tabs.</h2><p class="about-copy">${profile.about}</p><div class="about-facts"><div><span>LEARNING</span>${profile.learning.map(x => `<b>${x}</b>`).join('')}</div><div><span>WORKING WITH</span>${profile.tools.map(x => `<b>${x}</b>`).join('')}</div><div><span>INTERESTS</span>${profile.interests.map(x => `<b>${x}</b>`).join('')}</div></div></div></section><section class="section links-section" id="links"><div class="section-head"><p class="eyebrow">06 / LINK DIRECTORY</p><p>Useful places</p></div><div class="link-directory">${links.filter(x => x.href).map(x => `<a href="${x.href}" target="_blank" rel="noreferrer">${x.label}<span>↗</span></a>`).join('') || '<p class="empty-note">Social links will appear here when added in <code>src/data.js</code>.</p>'}${profile.email ? `<a href="mailto:${profile.email}">Email<span>↗</span></a>` : ''}</div></section><footer><span>SHIJIN / ${new Date().getFullYear()}</span><span>BUILT AS A PERSONAL ARCHIVE</span><a href="#top">BACK TO TOP ↑</a></footer></main></div>`;
+}
+function detail(id) { const p = projects.find(x => x.id === id); if (!p) return home(); return `<div class="site-shell detail-shell">${nav()}<main id="content">${mobileBar()}<article class="detail"><a class="back" href="#work">← BACK TO INDEX</a><p class="eyebrow">PROJECT ${p.number} / ${p.type}</p><h1>${p.name}</h1><p class="detail-lede">${p.description}</p><div class="detail-meta"><span>YEAR <b>${p.year}</b></span><span>STATUS <b>${p.status}</b></span><span>STACK <b>${p.stack.join(' / ')}</b></span></div>${cover(p)}<div class="detail-body"><section><p>01 / WHY</p><div>${p.why}</div></section><section><p>02 / BUILD</p><div>${p.build}</div></section><section><p>03 / TECH</p><div>${p.tech}</div></section><section><p>04 / RESULT</p><div>${p.result}</div></section></div><div class="detail-actions">${external(p.url, 'VISIT LIVE PROJECT')}</div></article></main></div>`; }
+function reader() { return `<div class="site-shell story-shell">${nav()}<main id="content">${mobileBar()}<article class="story-reader"><a class="back" href="#top">← BACK TO ARCHIVE</a><header class="story-header"><p class="eyebrow">MALAYALAM FICTION / ${story.chapters.length} CHAPTERS</p><h1>${story.title}</h1><p>${story.subtitle}</p><em>${story.note}</em><a id="download-story" class="download-story" href="/the-seventeenth-page.pdf" download="The-Seventeenth-Page-Shijin.pdf">DOWNLOAD ↓</a></header><div class="chapters">${story.chapters.map(([number, title, body], i) => `<section class="chapter" id="chapter-${i + 1}"><p>${String(i + 1).padStart(2, '0')} / ${number}</p><h2>${title}</h2>${body.split('\n\n').map(x => `<p class="story-copy">${x}</p>`).join('')}</section>`).join('')}<section class="story-ending"><p>അവസാനം?</p><strong>വായിച്ചു തീരുന്നതുവരെ<br>ഒരു പേജും മറിക്കരുത്.</strong><span>പതിനേഴാമത്തെ പേജ് തുറക്കരുത്.</span></section><div class="print-signature"><p>— Signed, Shijin</p><p class="print-date" id="print-date"></p></div></div></article></main></div>`; }
+function render() { const id = location.hash.match(/^#project\/(.+)$/)?.[1]; app.innerHTML = location.hash === '#story' ? reader() : id ? detail(id) : home(); bind(); }
+function bind() {
+  document.querySelectorAll('.project-open').forEach(b => b.addEventListener('click', () => location.hash = `project/${b.dataset.project}`));
+  document.querySelectorAll('.filters button').forEach(b => b.addEventListener('click', () => { document.querySelectorAll('.filters button').forEach(x => x.classList.remove('active')); b.classList.add('active'); const f = b.dataset.filter; document.querySelectorAll('.directory-item').forEach(x => x.hidden = f !== 'ALL' && !x.dataset.tags.includes(f)); }));
+
+  $$('.sound-toggle').forEach(btn => btn.addEventListener('click', async () => {
+    if (audioState.playing) {
+      stopAudio();
+      syncSoundUI('Sound stopped.');
+    } else {
+      const note = await startAudio();
+      syncSoundUI(note);
+    }
+  }));
+  $$('.track-select').forEach(sel => sel.addEventListener('change', () => {
+    stopAudio();
+    audioState.trackId = sel.value;
+    const track = currentTrack();
+    syncSoundUI(track.id === 'ambient'
+      ? 'Original browser-generated ambience. Sound starts only when you turn it on.'
+      : track.src ? 'Audio file configured. Turn sound on to play.' : `Audio not configured. Add a licensed ${track.label} file path in src/music.js.`);
+  }));
+  syncSoundUI();
+
+}
+window.addEventListener('beforeprint', () => {
+  const d = $('#print-date');
+  if (d) d.textContent = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+});
+window.addEventListener('hashchange', render); render();
