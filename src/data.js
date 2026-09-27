@@ -63,7 +63,7 @@ export const experiments = [];
 
 // Add socials here when you want them public. Empty links are intentionally hidden.
 export const links = [
-  { label: 'GitHub', href: '' },
+  { label: 'GitHub', href: 'https://github.com/shijinrajx7' },
   { label: 'Instagram', href: 'https://www.instagram.com/shijin.exe/?hl=en' },
   { label: 'YouTube', href: '' },
   { label: 'LinkedIn', href: '' },
