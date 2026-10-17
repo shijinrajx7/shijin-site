@@ -23,6 +23,7 @@ export const profile = {
     /** Leave empty ('') to hide LinkedIn everywhere. */
     linkedin: '',
     github: 'https://github.com/shijinrajx7',
+    instagram: 'https://www.instagram.com/shijin.exe/',
   },
   resumePdf: '/assets/Shijinraj_K_Resume.pdf',
   portrait: {
@@ -63,11 +64,69 @@ export type Project = {
   metrics: Metric[];
   /** Omit when there is no public repository — the GitHub button is hidden instead of linking to a 404. */
   github?: string;
+  /** Live website address — shows a "Visit live" button. */
+  url?: string;
   palette: Palette;
   motif: 'shield' | 'flow' | 'tenants';
 };
 
 export const projects: Project[] = [
+  {
+    id: 'nope',
+    title: 'NOPE.',
+    year: 'Live',
+    genre: 'Web • App • Experiment',
+    logline: 'A compact web build, published as an independent experiment.',
+    stack: ['Web'],
+    build: ['A compact web build, published as an independent experiment. The live version is available to explore.'],
+    features: ['Published and live'],
+    metrics: [],
+    url: 'https://nope-rosy.vercel.app',
+    palette: { from: '#1c0505', via: '#7a1a1a', to: '#0a0505', accent: '#ff6b6b' },
+    motif: 'shield',
+  },
+  {
+    id: 'content-forge',
+    title: 'CONTENT FORGE',
+    year: 'Live',
+    genre: 'Website • App',
+    logline: 'A web project made to exist on the open internet.',
+    stack: ['Web'],
+    build: ['A web project published at its own live address.'],
+    features: ['Published and live'],
+    metrics: [],
+    url: 'https://content-forge-ten-alpha.vercel.app',
+    palette: { from: '#1c1003', via: '#6b3c06', to: '#0a0806', accent: '#ffb547' },
+    motif: 'flow',
+  },
+  {
+    id: 'wedding-invite',
+    title: 'WEDDING INVITE',
+    year: 'Live',
+    genre: 'Website • Invitation',
+    logline: 'A dedicated website made for a real-world occasion.',
+    stack: ['Web'],
+    build: ['A published invitation website, available online.'],
+    features: ['Published and live'],
+    metrics: [],
+    url: 'https://wedding-invite-wine-five.vercel.app',
+    palette: { from: '#12062a', via: '#4a1f9c', to: '#07060c', accent: '#b98bff' },
+    motif: 'tenants',
+  },
+  {
+    id: 'adhixah',
+    title: 'ADHIXAH',
+    year: 'Live',
+    genre: 'Website',
+    logline: 'A website published as part of the growing build archive.',
+    stack: ['Web'],
+    build: ['The current public version is online.'],
+    features: ['Published and live'],
+    metrics: [],
+    url: 'https://adhixah.netlify.app',
+    palette: { from: '#03150f', via: '#0d5a40', to: '#050a08', accent: '#46e3a8' },
+    motif: 'flow',
+  },
   {
     id: 'nova',
     title: 'NOVA',
@@ -269,7 +328,7 @@ export const seasons: Season[] = [
     number: 2,
     title: 'Building Originals',
     period: 'Ongoing',
-    synopsis: 'Three experiments — a desktop AI companion, a productivity app and a gesture-control idea.',
+    synopsis: 'Live websites and apps, plus three experiments — a desktop AI companion, a productivity app and a gesture-control idea.',
     episodes: [
       {
         code: 'S02 E01',
@@ -344,8 +403,8 @@ export const introSlides: IntroSlide[] = [
   },
   {
     kicker: 'Projects',
-    title: 'Three Originals',
-    lines: ['NOVA — desktop AI companion', 'Life OS — student productivity app', 'Gesture Control PC — computer-vision experiment'],
+    title: `${projects.length} Originals`,
+    lines: ['Live: NOPE., Content Forge, Wedding Invite, Adhixah', 'NOVA — desktop AI companion', 'Life OS · Gesture Control PC'],
   },
   {
     kicker: 'Achievements',
@@ -357,6 +416,18 @@ export const introSlides: IntroSlide[] = [
     title: 'Now exploring',
     lines: ['AI Integration · Robotics · Computer Vision · AI Agents'],
   },
+];
+
+/** Original tracks by binaryking — files live in public/audio/ */
+export const soundtrack = [
+  { id: 'track-1', label: 'Track 01', src: '/audio/1.mp3' },
+  { id: 'track-2', label: 'Track 02', src: '/audio/2.mp3' },
+  { id: 'track-3', label: 'Track 03', src: '/audio/3.mp3' },
+  { id: 'track-4', label: 'Track 04', src: '/audio/4.mp3' },
+  { id: 'track-5', label: 'Track 05', src: '/audio/5.mp3' },
+  { id: 'track-6', label: 'Track 06', src: '/audio/6.mp3' },
+  { id: 'track-7', label: 'Track 07', src: '/audio/7.mp3' },
+  { id: 'track-8', label: 'Track 08', src: '/audio/8.mp3' },
 ];
 
 export type ProfileId = 'shijinraj' | 'recruiter' | 'developer' | 'creative';
