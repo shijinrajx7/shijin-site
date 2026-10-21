@@ -1,0 +1,845 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080808">
+<title>OPERATION RED EYE // JARVIS</title>
+
+<style>
+:root {
+  --red: #ff263f;
+  --red2: #a5001c;
+  --bg: #080809;
+  --panel: #101012;
+  --line: #4a111b;
+  --text: #e8e2eb;
+  --muted: #918593;
+  --green: #00ff9d;
+  --blue: #a7b9ff;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background:
+    radial-gradient(ellipse at 50% 0%, #26070d 0%, transparent 48%),
+    var(--bg);
+  color: var(--text);
+  font-family: "Courier New", monospace;
+  font-size: 13px;
+  min-height: 100vh;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  opacity: .13;
+  background: repeating-linear-gradient(
+    transparent 0px, transparent 3px,
+    #ff2030 4px, transparent 5px
+  );
+}
+button, input { font: inherit; }
+button {
+  color: var(--red);
+  border: 1px solid var(--line);
+  background: #15090c;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: .2s;
+}
+button:hover {
+  border-color: var(--red);
+  background: #300b12;
+  box-shadow: 0 0 15px #ff263f25;
+}
+button:focus-visible, input:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 3px;
+}
+h2 {
+  color: var(--red);
+  font-size: 14px;
+  letter-spacing: 2px;
+  font-weight: normal;
+  margin: 0 0 15px;
+}
+p { line-height: 1.7; }
+.muted { color: var(--muted); }
+.red { color: var(--red); }
+.green { color: var(--green); }
+.blue { color: var(--blue); }
+.small { font-size: 11px; }
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--red2);
+  background: #080809dd;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  backdrop-filter: blur(12px);
+}
+.brand {
+  display: flex;
+  gap: 13px;
+  align-items: center;
+}
+.logo {
+  color: var(--red);
+  font-size: 32px;
+  text-shadow: 0 0 20px var(--red);
+}
+.brand h1 {
+  font-size: clamp(16px, 2.5vw, 24px);
+  letter-spacing: 4px;
+  color: var(--red);
+  margin: 0 0 5px;
+}
+.brand p { margin: 0; font-size: 10px; letter-spacing: 2px; }
+.header-right { text-align: right; }
+#clock { color: var(--red); font-size: 22px; letter-spacing: 2px; }
+.status { color: var(--green); margin-top: 6px; font-size: 10px; }
+.layout {
+  display: grid;
+  grid-template-columns: 205px minmax(0, 1fr);
+  gap: 16px;
+  padding: 16px;
+  max-width: 1700px;
+  margin: auto;
+}
+aside { display: flex; flex-direction: column; gap: 14px; }
+main { min-width: 0; }
+.panel {
+  border: 1px solid var(--line);
+  background: linear-gradient(145deg, #111113f5, #09090bf5);
+  padding: 17px;
+  position: relative;
+  min-width: 0;
+  box-shadow: inset 0 0 25px #ff263f05;
+}
+.panel::before {
+  content: "";
+  position: absolute;
+  width: 34px;
+  height: 2px;
+  top: -1px;
+  left: 14px;
+  background: var(--red);
+}
+.nav button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  border-left: 2px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  margin: 3px 0;
+}
+.nav button.active {
+  color: var(--red);
+  background: #ff263f0c;
+  border-left-color: var(--red);
+}
+.briefing { color: var(--muted); font-size: 12px; }
+.briefing strong { color: var(--red); font-weight: normal; }
+.hero {
+  display: grid;
+  grid-template-columns: 1fr minmax(180px, 300px) 1fr;
+  align-items: center;
+  gap: 10px;
+  min-height: 280px;
+  overflow: hidden;
+}
+.hero-copy { color: var(--muted); line-height: 2; }
+.hero-copy .online { color: var(--green); }
+.eye {
+  width: min(100%, 275px);
+  aspect-ratio: 1;
+  margin: auto;
+  position: relative;
+  display: grid;
+  place-items: center;
+  border: 1px solid #65101d;
+  border-radius: 50%;
+  background:
+    repeating-conic-gradient(from 0deg, #ff263f65 0deg 1deg,
+      transparent 1deg 8deg);
+  box-shadow: 0 0 30px #ff263f12, inset 0 0 35px #ff263f12;
+  animation: rotate 35s linear infinite;
+}
+.eye::before, .eye::after {
+  content: "";
+  position: absolute;
+  border: 1px dashed #ff263f90;
+  border-radius: 50%;
+  inset: 10%;
+  animation: rotate 14s linear infinite reverse;
+}
+.eye::after {
+  inset: 22%;
+  border-style: solid;
+  border-color: #ff263f;
+  box-shadow: 0 0 20px #ff263f35;
+}
+.eye-core {
+  width: 28%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, white 0%, #ff263f 14%,
+    #9b001b 40%, #190006 72%);
+  box-shadow: 0 0 18px var(--red), 0 0 60px #ff263f90;
+  animation: pulse 2s ease-in-out infinite;
+  z-index: 2;
+}
+@keyframes rotate { to { transform: rotate(360deg); } }
+@keyframes pulse {
+  0%, 100% { opacity: .75; transform: scale(.9); }
+  50% { opacity: 1; transform: scale(1.12); }
+}
+.hero-quote {
+  color: var(--red);
+  font-size: 11px;
+  line-height: 1.8;
+}
+.grid2 {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(230px, 1fr);
+  gap: 14px;
+  margin-top: 14px;
+}
+.scan-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.progress {
+  height: 5px;
+  background: #351019;
+  margin: 12px 0 18px;
+  overflow: hidden;
+}
+.progress div {
+  height: 100%;
+  width: 0;
+  background: var(--red);
+  box-shadow: 0 0 12px var(--red);
+  transition: width .2s;
+}
+.scan-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 0;
+  color: var(--blue);
+  font-size: 12px;
+}
+.scan-row span:last-child { color: var(--muted); }
+.scan-row .ok { color: var(--green) !important; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
+.primary {
+  background: #510b18;
+  border-color: var(--red);
+}
+.log {
+  max-height: 290px;
+  overflow-y: auto;
+  font-size: 12px;
+}
+.log-line {
+  display: flex;
+  gap: 10px;
+  margin: 12px 0;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.log-time { color: #a68bb9; flex-shrink: 0; }
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.stat { text-align: center; min-width: 0; }
+.ring {
+  width: 66px;
+  max-width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  margin: 10px auto;
+  display: grid;
+  place-items: center;
+  border: 4px solid #42101a;
+  border-top-color: var(--red);
+  border-right-color: var(--red);
+  color: var(--text);
+  font-size: 11px;
+}
+.info-list { line-height: 2; color: var(--blue); overflow-wrap: anywhere; }
+.info-list span { color: var(--muted); }
+.bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 14px;
+}
+.quick-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 7px 0;
+  color: var(--blue);
+}
+.quick-row button { padding: 3px 8px; }
+.vault-form { display: flex; gap: 8px; margin-top: 12px; }
+input {
+  min-width: 0;
+  width: 100%;
+  color: var(--red);
+  background: #080809;
+  border: 1px solid var(--line);
+  padding: 12px;
+}
+#vaultMessage {
+  margin-top: 15px;
+  color: var(--green);
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+.hidden { display: none !important; }
+.view { display: none; }
+.view.active { display: block; }
+footer {
+  padding: 22px;
+  text-align: center;
+  color: #65535e;
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+@media (max-width: 1000px) {
+  .layout { grid-template-columns: 1fr; }
+  aside { display: grid; grid-template-columns: 1fr 1fr; }
+  .nav { grid-column: 1 / -1; }
+  .nav button { display: inline-block; width: auto; }
+}
+@media (max-width: 650px) {
+  header { padding: 13px; }
+  .header-right { display: none; }
+  .layout { padding: 9px; gap: 10px; }
+  aside { display: flex; }
+  .hero { grid-template-columns: 1fr; text-align: center; padding: 20px 12px; }
+  .hero-copy { line-height: 1.7; }
+  .hero-quote { display: none; }
+  .eye { width: 190px; }
+  .grid2, .bottom-grid { grid-template-columns: 1fr; }
+  .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 3px; }
+  .panel { padding: 13px; }
+  .brand h1 { letter-spacing: 2px; }
+  .brand p { letter-spacing: 1px; }
+  .ring { font-size: 10px; }
+  .nav button { font-size: 11px; padding: 9px; }
+  .scan-row { font-size: 11px; }
+}
+</style>
+</head>
+
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">◈</div>
+    <div>
+      <h1>OPERATION RED EYE</h1>
+      <p class="muted">JARVIS // INTELLIGENCE TERMINAL</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <div id="clock">00:00:00</div>
+    <div id="date" class="muted small"></div>
+    <div class="status">● SYSTEM ONLINE</div>
+  </div>
+</header>
+
+<div class="layout">
+  <aside>
+    <section class="panel nav">
+      <h2>▣ NAVIGATION</h2>
+      <button class="active" data-view="dashboard">◈ DASHBOARD</button>
+      <button data-view="scanView">◎ SYSTEM SCAN</button>
+      <button data-view="logView">▤ MISSION LOG</button>
+      <button data-view="vaultView">▣ SECRET VAULT</button>
+      <button data-view="settingsView">⚙ SETTINGS</button>
+    </section>
+
+    <section class="panel briefing">
+      <h2>MISSION BRIEFING</h2>
+      <p><strong>Agent, welcome.</strong></p>
+      You have entered the RED EYE intelligence terminal.
+      <p>Run a simulated scan. Explore the interface. Discover the secret code.</p>
+      <p>Somewhere inside this terminal is a hidden message.</p>
+      <p class="red">Good luck, Agent.</p>
+      <p>— JARVIS</p>
+    </section>
+  </aside>
+
+  <main>
+    <section class="view active" id="dashboard">
+      <div class="panel hero">
+        <div class="hero-copy">
+          <div class="online">› JARVIS ONLINE</div>
+          <br>
+          <div>› MONITORING...</div>
+          <div>› ANALYZING...</div>
+          <div>› AWAITING COMMAND</div>
+          <div class="red">› READY.</div>
+        </div>
+        <div class="eye" aria-label="Animated red eye">
+          <div class="eye-core"></div>
+        </div>
+        <div class="hero-quote">
+          "THE MOST POWERFUL TOOL IS A CURIOUS MIND."
+          <br><br>— JARVIS
+        </div>
+      </div>
+
+      <div class="grid2">
+        <section class="panel">
+          <div class="scan-top">
+            <h2>◎ LIVE SYSTEM SCAN</h2>
+            <span id="scanLabel" class="muted small">STANDBY</span>
+          </div>
+          <div class="progress"><div id="progressBar"></div></div>
+          <div id="scanRows"></div>
+          <div class="actions">
+            <button class="primary" id="scanBtn">▶ RUN SCAN</button>
+            <button id="stopBtn">■ CANCEL</button>
+          </div>
+          <p class="muted small" id="scanNote">
+            Simulation only — no actual system inspection.
+          </p>
+        </section>
+
+        <section class="panel">
+          <h2>▤ MISSION LOG <button id="clearLog" style="float:right;padding:4px 8px">CLEAR</button></h2>
+          <div class="log" id="log"></div>
+        </section>
+      </div>
+
+      <div class="bottom-grid">
+        <section class="panel">
+          <h2>⌘ QUICK COMMANDS</h2>
+          <div class="quick-row"><span>01. Run system scan</span><button data-command="scan">[SCAN]</button></div>
+          <div class="quick-row"><span>02. View mission log</span><button data-command="log">[LOG]</button></div>
+          <div class="quick-row"><span>03. Open secret vault</span><button data-command="vault">[VAULT]</button></div>
+          <div class="quick-row"><span>04. Show system info</span><button data-command="info">[INFO]</button></div>
+          <div class="quick-row"><span>05. Generate mission</span><button data-command="mission">[NEW]</button></div>
+        </section>
+
+        <section class="panel">
+          <h2>▣ SECRET UNLOCK</h2>
+          <p class="muted">Enter the 8-digit code to reveal the hidden message.</p>
+          <form id="vaultForm" class="vault-form">
+            <input id="secretCode" type="password" inputmode="numeric"
+              maxlength="8" placeholder="Enter code..." autocomplete="off"
+              aria-label="Eight digit secret code">
+            <button class="primary" type="submit">UNLOCK</button>
+          </form>
+          <div id="vaultMessage" class="hidden" aria-live="polite"></div>
+          <p id="vaultHint" class="muted small">Hint: curiosity opens doors.</p>
+        </section>
+      </div>
+
+      <div class="panel" style="margin-top:14px">
+        <h2>◉ SYSTEM STATUS</h2>
+        <div class="stats">
+          <div class="stat"><span class="muted">CPU</span><div class="ring" id="cpu">--%</div></div>
+          <div class="stat"><span class="muted">RAM</span><div class="ring" id="ram">--%</div></div>
+          <div class="stat"><span class="muted">DISK</span><div class="ring" id="disk">--%</div></div>
+          <div class="stat"><span class="muted">LINK</span><div class="ring" id="link">--</div></div>
+        </div>
+        <p class="muted small">Randomized demo values, not real hardware measurements.</p>
+      </div>
+    </section>
+
+    <section class="view" id="scanView">
+      <div class="panel">
+        <h2>◎ ADVANCED DIAGNOSTICS</h2>
+        <p>Launch a simulated diagnostic sequence.</p>
+        <div id="scanRows2"></div>
+        <div class="progress"><div id="progressBar2"></div></div>
+        <button class="primary" id="scanBtn2">▶ START DIAGNOSTICS</button>
+      </div>
+    </section>
+
+    <section class="view" id="logView">
+      <div class="panel">
+        <h2>▤ COMPLETE MISSION HISTORY</h2>
+        <div id="log2" class="log"></div>
+        <button id="clearLog2">CLEAR HISTORY</button>
+      </div>
+    </section>
+
+    <section class="view" id="vaultView">
+      <div class="panel">
+        <h2>▣ RESTRICTED ACCESS</h2>
+        <p class="muted">A classified message awaits its agent.</p>
+        <form class="vault-form" id="vaultForm2">
+          <input id="secretCode2" type="password" inputmode="numeric"
+            maxlength="8" placeholder="8-digit access code" autocomplete="off">
+          <button class="primary" type="submit">VERIFY</button>
+        </form>
+        <div id="vaultMessage2" class="hidden" aria-live="polite"></div>
+        <p class="muted small">Hint: curiosity opens doors.</p>
+      </div>
+    </section>
+
+    <section class="view" id="settingsView">
+      <div class="panel">
+        <h2>⚙ TERMINAL SETTINGS</h2>
+        <p>Interface configuration</p>
+        <button id="motionBtn">TOGGLE ANIMATIONS</button>
+        <button id="soundBtn">TOGGLE SOUND</button>
+        <button id="resetBtn">RESET DEMO</button>
+        <p class="muted small">Sound is generated locally by your browser.
+          No audio or data is sent anywhere.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer>OPERATION RED EYE // LOCAL DEMO // NO NETWORK REQUIRED</footer>
+
+<script>
+(() => {
+  "use strict";
+
+  const $ = id => document.getElementById(id);
+  const tasks = [
+    "Checking CPU information",
+    "Checking memory usage",
+    "Checking disk space",
+    "Checking system uptime",
+    "Checking kernel version",
+    "Checking network status",
+    "Checking audio devices",
+    "Checking graphics subsystem",
+    "Checking package manager",
+    "Checking running processes"
+  ];
+
+  // This is an intentionally simple local demo, not real authentication.
+  const SECRET_CODE = "7777777";
+  let scanTimer = null;
+  let scanIndex = 0;
+  let motion = true;
+  let sound = false;
+  let audioContext = null;
+  let missionNumber = 1;
+
+  function timeString() {
+    return new Date().toLocaleTimeString("en-GB");
+  }
+
+  function updateClock() {
+    const now = new Date();
+    $("clock").textContent = now.toLocaleTimeString("en-GB");
+    $("date").textContent = now.toLocaleDateString(undefined, {
+      weekday: "short", day: "2-digit", month: "short", year: "numeric"
+    });
+  }
+
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  function addLog(message) {
+    const line = document.createElement("div");
+    line.className = "log-line";
+
+    const stamp = document.createElement("span");
+    stamp.className = "log-time";
+    stamp.textContent = "[" + timeString() + "]";
+
+    const content = document.createElement("span");
+    content.textContent = message;
+
+    line.append(stamp, content);
+    $("log").prepend(line);
+
+    // Keep the demo responsive during long sessions.
+    while ($("log").children.length > 100) {
+      $("log").lastElementChild.remove();
+    }
+    syncLogs();
+  }
+
+  function syncLogs() {
+    $("log2").replaceChildren(...Array.from($("log").children,
+      node => node.cloneNode(true)));
+  }
+
+  function makeRows(containerId) {
+    const container = $(containerId);
+    container.replaceChildren();
+
+    tasks.forEach((task, i) => {
+      const row = document.createElement("div");
+      row.className = "scan-row";
+
+      const label = document.createElement("span");
+      label.textContent = "[*] " + task + "...";
+
+      const result = document.createElement("span");
+      result.textContent = "[WAIT]";
+      result.dataset.result = String(i);
+
+      row.append(label, result);
+      container.append(row);
+    });
+  }
+
+  makeRows("scanRows");
+  makeRows("scanRows2");
+
+  function setProgress(index) {
+    const percentage = Math.round(index / tasks.length * 100);
+    $("progressBar").style.width = percentage + "%";
+    $("progressBar2").style.width = percentage + "%";
+    $("scanLabel").textContent = percentage + "%";
+  }
+
+  function setTaskResult(index, value, success) {
+    ["scanRows", "scanRows2"].forEach(id => {
+      const result = $(id).querySelector('[data-result="' + index + '"]');
+      if (result) {
+        result.textContent = value;
+        result.className = success ? "ok" : "";
+      }
+    });
+  }
+
+  function playBeep(frequency = 600) {
+    if (!sound) return;
+    try {
+      audioContext ||= new AudioContext();
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      oscillator.frequency.value = frequency;
+      gain.gain.value = 0.025;
+      oscillator.connect(gain);
+      gain.connect(audioContext.destination);
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + 0.08);
+    } catch (_) {
+      // Audio is optional.
+    }
+  }
+
+  function stopScan(message = "Scan cancelled.") {
+    if (scanTimer) clearInterval(scanTimer);
+    scanTimer = null;
+    $("scanBtn").disabled = false;
+    $("scanBtn2").disabled = false;
+    $("scanLabel").textContent = "STANDBY";
+    if (message) addLog(message);
+  }
+
+  function runScan() {
+    if (scanTimer) {
+      addLog("A scan is already running.");
+      return;
+    }
+
+    scanIndex = 0;
+    makeRows("scanRows");
+    makeRows("scanRows2");
+    setProgress(0);
+    $("scanBtn").disabled = true;
+    $("scanBtn2").disabled = true;
+    $("scanLabel").textContent = "INITIALIZING";
+    addLog("Diagnostic sequence initiated.");
+    playBeep(700);
+
+    scanTimer = setInterval(() => {
+      if (scanIndex >= tasks.length) {
+        clearInterval(scanTimer);
+        scanTimer = null;
+        setProgress(tasks.length);
+        $("scanLabel").textContent = "COMPLETE";
+        $("scanBtn").disabled = false;
+        $("scanBtn2").disabled = false;
+        addLog("Simulated scan complete. All demo checks passed.");
+        playBeep(900);
+        return;
+      }
+
+      setTaskResult(scanIndex, "[OK]", true);
+      addLog(tasks[scanIndex] + ": demo check passed.");
+      scanIndex++;
+      setProgress(scanIndex);
+
+      // Simulated values: never presented as real hardware readings.
+      ["cpu", "ram", "disk"].forEach(id => {
+        $(id).textContent = (10 + Math.floor(Math.random() * 80)) + "%";
+      });
+      $("link").textContent = "OK";
+      playBeep(450 + scanIndex * 30);
+    }, 650);
+  }
+
+  $("scanBtn").addEventListener("click", runScan);
+  $("scanBtn2").addEventListener("click", runScan);
+  $("stopBtn").addEventListener("click", () => {
+    if (scanTimer) {
+      stopScan("Agent cancelled the active scan.");
+      $("scanBtn").disabled = false;
+      $("scanBtn2").disabled = false;
+    } else {
+      addLog("No active scan to cancel.");
+    }
+  });
+
+  function showView(id) {
+    document.querySelectorAll(".view").forEach(view => {
+      view.classList.toggle("active", view.id === id);
+    });
+    document.querySelectorAll("[data-view]").forEach(button => {
+      button.classList.toggle("active", button.dataset.view === id);
+    });
+    if (id === "logView") syncLogs();
+    addLog("Navigation: " + id + ".");
+  }
+
+  document.querySelectorAll("[data-view]").forEach(button => {
+    button.addEventListener("click", () => showView(button.dataset.view));
+  });
+
+  document.querySelectorAll("[data-command]").forEach(button => {
+    button.addEventListener("click", () => {
+      const command = button.dataset.command;
+      if (command === "scan") {
+        showView("scanView");
+        runScan();
+      } else if (command === "log") {
+        showView("logView");
+      } else if (command === "vault") {
+        showView("vaultView");
+      } else if (command === "info") {
+        addLog("Environment: local browser demo. Hardware access: not connected.");
+        showView("dashboard");
+      } else if (command === "mission") {
+        missionNumber++;
+        const missions = [
+          "Discover a new keyboard shortcut.",
+          "Build a tiny browser game.",
+          "Learn one new Linux command.",
+          "Customize your desktop.",
+          "Write a short piece of code."
+        ];
+        const mission = missions[Math.floor(Math.random() * missions.length)];
+        addLog("MISSION " + missionNumber + ": " + mission);
+        alert("NEW MISSION " + missionNumber + "\n\n" + mission);
+      }
+    });
+  });
+
+  function unlock(inputId, messageId, form) {
+    const input = $(inputId);
+    const output = $(messageId);
+    const value = input.value.trim();
+
+    output.classList.remove("hidden");
+    if (value === SECRET_CODE) {
+      output.textContent =
+        "ACCESS GRANTED. Agent, the secret was never about the code. " +
+        "It was about your curiosity. Keep building. — JARVIS";
+      addLog("Secret vault unlocked.");
+      $("vaultHint").textContent = "ACCESS GRANTED";
+      playBeep(950);
+    } else {
+      output.textContent = "ACCESS DENIED. Incorrect code. Try again, Agent.";
+      addLog("Vault access denied.");
+      playBeep(180);
+    }
+    input.value = "";
+  }
+
+  $("vaultForm").addEventListener("submit", event => {
+    event.preventDefault();
+    unlock("secretCode", "vaultMessage", event.currentTarget);
+  });
+
+  $("vaultForm2").addEventListener("submit", event => {
+    event.preventDefault();
+    unlock("secretCode2", "vaultMessage2", event.currentTarget);
+  });
+
+  $("clearLog").addEventListener("click", () => {
+    $("log").replaceChildren();
+    syncLogs();
+    addLog("Mission log cleared.");
+  });
+
+  $("clearLog2").addEventListener("click", () => {
+    $("log").replaceChildren();
+    syncLogs();
+    addLog("Mission log cleared.");
+  });
+
+  $("motionBtn").addEventListener("click", () => {
+    motion = !motion;
+    document.body.style.setProperty("--animation-state", motion ? "running" : "paused");
+    document.querySelectorAll(".eye, .eye::before, .eye-core").forEach(el => {
+      el.style.animationPlayState = motion ? "running" : "paused";
+    });
+    // Also handle animations through a stylesheet class.
+    document.body.classList.toggle("no-motion", !motion);
+    addLog("Animations " + (motion ? "enabled." : "paused."));
+  });
+
+  $("soundBtn").addEventListener("click", () => {
+    sound = !sound;
+    addLog("Terminal sound " + (sound ? "enabled." : "disabled."));
+    playBeep();
+  });
+
+  $("resetBtn").addEventListener("click", () => {
+    if (!confirm("Reset the demo and clear the mission log?")) return;
+    if (scanTimer) clearInterval(scanTimer);
+    scanTimer = null;
+    $("scanBtn").disabled = false;
+    $("scanBtn2").disabled = false;
+    $("log").replaceChildren();
+    syncLogs();
+    makeRows("scanRows");
+    makeRows("scanRows2");
+    setProgress(0);
+    ["cpu", "ram", "disk", "link"].forEach(id => $(id).textContent = "--");
+    $("vaultMessage").classList.add("hidden");
+    $("vaultMessage2").classList.add("hidden");
+    addLog("Demo reset. Awaiting agent.");
+    showView("dashboard");
+  });
+
+  // The motion preference also works without JavaScript animations.
+  const style = document.createElement("style");
+  style.textContent = `
+    .no-motion *, .no-motion *::before, .no-motion *::after {
+      animation-play-state: paused !important;
+    }
+  `;
+  document.head.append(style);
+
+  addLog("Initializing RED EYE terminal...");
+  addLog("Local demo loaded successfully.");
+  addLog("Awaiting agent command.");
+})();
+</script>
+</body>
+</html>
+	
