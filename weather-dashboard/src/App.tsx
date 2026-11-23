@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Activity, ArrowDown, ArrowUp, CloudSun, Compass, Droplets, Gauge, Heart, LocateFixed, MapPin, Moon, RefreshCw, Search, Sun, Sunrise, Sunset, Thermometer, Wind, X, Eye, CloudRain, Clock3, Cloud, Sparkles } from 'lucide-react'
+import { Activity, ArrowDown, ArrowUp, CloudSun, Droplets, Gauge, Heart, LocateFixed, MapPin, Moon, RefreshCw, Search, Sun, Sunrise, Sunset, Wind, X, Eye, CloudRain, Clock3, Cloud, Sparkles } from 'lucide-react'
 import { TemperatureChart, RainChart } from './components/WeatherCharts'
 import { useWeather } from './hooks/useWeather'
 import { useFavorites } from './hooks/useFavorites'
 import { useGeolocation } from './hooks/useGeolocation'
 import { searchCities } from './lib/api'
-import { aqiColor, aqiLabel, formatClock, formatDay, formatHour, tempLabel, temperature, windDirection } from './lib/units'
+import { aqiColor, aqiLabel, formatClock, formatDay, formatHour, tempLabel, windDirection } from './lib/units'
 import { getWeatherMeta } from './lib/weatherCodes'
 import type { GeoLocation, TemperatureUnit, ThemeMode } from './types/weather'
 
