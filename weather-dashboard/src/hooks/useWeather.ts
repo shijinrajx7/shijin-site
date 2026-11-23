@@ -16,6 +16,6 @@ export function useWeather() {
     } catch (err) { setError(err instanceof Error ? err.message : 'Unable to load weather. Check your connection.') }
     finally { setLoading(false); setRefreshing(false) }
   }, [bundle])
-  useEffect(() => { if (!bundle) void load({ id: 0, name: 'Kasaragod', country: 'India', latitude: 12.4996, longitude: 74.9869 }) }, [])
+  useEffect(() => { void load(bundle?.location ?? { id: 0, name: 'Kasaragod', country: 'India', latitude: 12.4996, longitude: 74.9869 }) }, [])
   return { bundle, loading, refreshing, error, load, retry: () => bundle ? load(bundle.location) : undefined }
 }
