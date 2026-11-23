@@ -3,6 +3,10 @@ const BASE = 'https://api.open-meteo.com/v1/forecast'
 const AIR = 'https://air-quality-api.open-meteo.com/v1/air-quality'
 const GEO = 'https://geocoding-api.open-meteo.com/v1/search'
 
+const specialPlaces: Array<{ name: string; country: string; admin1: string; admin2: string; latitude: number; longitude: number; aliases: string[] }> = [
+  { name: 'Ooty (Udhagamandalam)', country: 'India', admin1: 'Tamil Nadu', admin2: 'The Nilgiris', latitude: 11.4102, longitude: 76.6950, aliases: ['ooty', 'udhagamandalam', 'ootacamund'] },
+]
+
 const continents: Array<{ name: string; latitude: number; longitude: number; aliases: string[] }> = [
   { name: 'Africa', latitude: 0, longitude: 20, aliases: ['africa'] },
   { name: 'Antarctica', latitude: -82, longitude: 0, aliases: ['antarctica', 'antartica', 'south pole'] },
@@ -31,6 +35,14 @@ type CountryResult = {
 
 export async function searchCities(query: string, signal?: AbortSignal): Promise<GeoLocation[]> {
   const normalized = query.trim().toLowerCase()
+  const specialMatches = specialPlaces
+    .filter(place => place.aliases.some(alias => alias.includes(normalized) || normalized.includes(alias)))
+    .map((place, index): GeoLocation => ({
+      id: -3000 - index, name: place.name, country: place.country, admin1: place.admin1,
+      admin2: place.admin2, latitude: place.latitude, longitude: place.longitude,
+      timezone: 'Asia/Kolkata', feature_code: 'LOCAL_ALIAS'
+    }))
+
   const continentMatches = continents
     .filter(item => item.aliases.some(alias => alias.includes(normalized) || normalized.includes(alias)))
     .map((item, index): GeoLocation => ({
@@ -61,7 +73,7 @@ export async function searchCities(query: string, signal?: AbortSignal): Promise
   })).catch(error => { if (signal?.aborted) throw error; return [] })
 
   const [geo, countryResults] = await Promise.all([geoPromise, countryPromise])
-  const all = [...continentMatches, ...countryResults, ...geo]
+  const all = [...specialMatches, ...continentMatches, ...countryResults, ...geo]
   const seen = new Set<string>()
   return all.filter(place => {
     const key = `${place.name.toLowerCase()}|${place.country.toLowerCase()}|${place.latitude.toFixed(2)}|${place.longitude.toFixed(2)}`
