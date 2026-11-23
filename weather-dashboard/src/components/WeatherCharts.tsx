@@ -1,6 +1,6 @@
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, BarChart, Bar } from 'recharts'
 import type { WeatherResponse, TemperatureUnit } from '../types/weather'
-import { formatHour, tempLabel, temperature } from '../lib/units'
+import { formatHour, tempLabel } from '../lib/units'
 export function TemperatureChart({ weather, unit }: { weather: WeatherResponse; unit: TemperatureUnit }) {
   const rows = weather.hourly.time.slice(0,24).filter((_,i)=>i%2===0).map((time)=>({ time: formatHour(time,weather.timezone), value: weather.hourly.temperature_2m[weather.hourly.time.indexOf(time)] }))
   return <div className="chart-wrap"><ResponsiveContainer width="100%" height="100%"><LineChart data={rows} margin={{top:12,right:10,left:-22,bottom:0}}><CartesianGrid strokeDasharray="3 5" stroke="var(--chart-grid)"/><XAxis dataKey="time" tick={{fill:'var(--muted)',fontSize:11}} axisLine={false} tickLine={false}/><YAxis domain={['dataMin - 2','dataMax + 2']} tickFormatter={v=>tempLabel(v,unit)} tick={{fill:'var(--muted)',fontSize:11}} axisLine={false} tickLine={false}/><Tooltip contentStyle={{background:'var(--surface-strong)',border:'1px solid var(--line)',borderRadius:14,color:'var(--text)'}} formatter={(v)=>[tempLabel(Number(v),unit),'Temperature']}/><Line type="monotone" dataKey="value" stroke="#f6b84b" strokeWidth={3} dot={{r:3,fill:'#f6b84b',stroke:'var(--surface)'}} activeDot={{r:5}}/></LineChart></ResponsiveContainer></div>
