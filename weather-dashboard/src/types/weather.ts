@@ -1,0 +1,9 @@
+export type GeoLocation = { id: number; name: string; country: string; admin1?: string; latitude: number; longitude: number; timezone?: string }
+export type CurrentWeather = { time: string; temperature_2m: number; apparent_temperature: number; relative_humidity_2m: number; is_day: number; precipitation: number; rain: number; showers: number; snowfall: number; weather_code: number; cloud_cover: number; pressure_msl: number; surface_pressure: number; wind_speed_10m: number; wind_direction_10m: number; wind_gusts_10m: number }
+export type HourlyWeather = { time: string[]; temperature_2m: number[]; apparent_temperature: number[]; precipitation_probability: number[]; precipitation: number[]; weather_code: number[]; relative_humidity_2m: number[]; wind_speed_10m: number[]; visibility: number[]; uv_index: number[] }
+export type DailyWeather = { time: string[]; weather_code: number[]; temperature_2m_max: number[]; temperature_2m_min: number[]; precipitation_probability_max: number[]; sunrise: string[]; sunset: string[]; uv_index_max: number[]; wind_speed_10m_max: number[] }
+export type WeatherResponse = { latitude: number; longitude: number; timezone: string; current: CurrentWeather; hourly: HourlyWeather; daily: DailyWeather; current_units?: Record<string,string> }
+export type AirQualityResponse = { current?: { time: string; european_aqi?: number; us_aqi?: number; pm2_5?: number; pm10?: number; ozone?: number; nitrogen_dioxide?: number } }
+export type WeatherBundle = { location: GeoLocation; weather: WeatherResponse; air: AirQualityResponse | null; fetchedAt: number }
+export type ThemeMode = 'light' | 'dark'
+export type TemperatureUnit = 'celsius' | 'fahrenheit'
