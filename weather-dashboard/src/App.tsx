@@ -54,7 +54,7 @@ function App() {
         </div>
         <button className="location-button" onClick={useMyLocation} disabled={locating}><LocateFixed size={17}/>{locating?'Locating…':'Use my location'}</button>
       </section>
-      {locationError&&<div className="inline-error location-error" role="alert"><span>{locationError}</span><button onClick={useMyLocation} disabled={locating}>Retry location</button></div>}
+      {locationError&&<div className="inline-error location-error" role="alert"><div className="location-error-copy"><span>{locationError}</span><details className="location-help"><summary>How to enable location</summary><ol><li>In Brave, tap the <b>⋮ menu</b> in the top-right corner.</li><li>Open <b>Settings → Site settings → Location</b>.</li><li>Turn on location access and make sure this site is not blocked.</li><li>Return to this Atmos page and tap <b>Retry location</b>.</li></ol><p>If prompted by Android, choose <b>Allow</b> while using the browser.</p></details></div><button onClick={useMyLocation} disabled={locating}>Retry location</button></div>}
       {error&&<div className="error-banner" role="alert"><span>{error.includes('fetch')?'You appear to be offline.':error}</span><button onClick={()=>retry?.()}>Try again <RefreshCw size={14}/></button></div>}
 
       {loading&&!bundle?<div className="skeleton-grid"><div className="skeleton hero-skeleton"/><div className="skeleton side-skeleton"/><div className="skeleton wide-skeleton"/></div>:weather&&current&&daily&&bundle&&meta&&<div className="content-grid">
