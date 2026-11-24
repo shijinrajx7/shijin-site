@@ -17,7 +17,7 @@ function App() {
   const [unit,setUnit]=useState<TemperatureUnit>(()=>(localStorage.getItem('atmos-unit') as TemperatureUnit)||'celsius')
   const [mode,setMode]=useState<ThemeMode>(()=>(localStorage.getItem('atmos-mode') as ThemeMode)||'dark')
   const [favoriteTemps,setFavoriteTemps]=useState<Record<number,number>>({})
-  const [searchError,setSearchError]=useState('')
+  const [searchError,setSearchError]=useState(''); const [usingCurrentLocation,setUsingCurrentLocation]=useState(false)
   const searchRef=useRef<HTMLDivElement>(null)
   const weather=bundle?.weather; const current=weather?.current; const daily=weather?.daily
   const meta= current ? getWeatherMeta(current.weather_code, current.is_day===1) : null
@@ -27,8 +27,8 @@ function App() {
   useEffect(()=>{if(!query.trim()){setSuggestions([]);return}const controller=new AbortController();const timer=window.setTimeout(async()=>{try{setSearching(true);setSearchError('');setSuggestions(await searchCities(query.trim(),controller.signal))}catch(e){if(!controller.signal.aborted)setSearchError('Could not search cities. Check your connection.')}finally{setSearching(false)}},280);return()=>{controller.abort();window.clearTimeout(timer)}},[query])
   useEffect(()=>{const close=(e:MouseEvent)=>{if(!searchRef.current?.contains(e.target as Node))setSuggestions([])};document.addEventListener('mousedown',close);return()=>document.removeEventListener('mousedown',close)},[])
   useEffect(()=>{favorites.forEach(async city=>{try{const {weather:w}=await import('./lib/api').then(m=>m.fetchWeather(city));setFavoriteTemps(old=>({...old,[city.id]:w.current.temperature_2m}))}catch{/* Keep the last visible favorite temperature. */}})},[favorites])
-  const choose=(city:GeoLocation)=>{setQuery('');setSuggestions([]);setSearchError('');void load(city)}
-  const useMyLocation=async()=>{try{const city=await locate();choose(city)}catch{/* locationError is shown below the search bar */}}
+  const choose=(city:GeoLocation, currentLocation=false)=>{setQuery('');setSuggestions([]);setSearchError('');setUsingCurrentLocation(currentLocation);void load(city)}
+  const useMyLocation=async()=>{try{const city=await locate();choose(city,true)}catch{/* Retry guidance is shown below the location button. */}}
   const toggleFavorite=()=>{if(!bundle)return;has(bundle.location)?remove(bundle.location.id):add(bundle.location)}
   const hourly=useMemo(()=>weather?.hourly.time.slice(0,24).map((time,i)=>({time,temp:weather.hourly.temperature_2m[i],code:weather.hourly.weather_code[i],rain:weather.hourly.precipitation_probability[i]}))??[],[weather])
   const aqi=bundle?.air?.current?.european_aqi
@@ -54,12 +54,12 @@ function App() {
         </div>
         <button className="location-button" onClick={useMyLocation} disabled={locating}><LocateFixed size={17}/>{locating?'Locating…':'Use my location'}</button>
       </section>
-      {locationError&&<p className="inline-error">{locationError}</p>}
+      {locationError&&<div className="inline-error location-error" role="alert"><span>{locationError}</span><button onClick={useMyLocation} disabled={locating}>Retry location</button></div>}
       {error&&<div className="error-banner" role="alert"><span>{error.includes('fetch')?'You appear to be offline.':error}</span><button onClick={()=>retry?.()}>Try again <RefreshCw size={14}/></button></div>}
 
       {loading&&!bundle?<div className="skeleton-grid"><div className="skeleton hero-skeleton"/><div className="skeleton side-skeleton"/><div className="skeleton wide-skeleton"/></div>:weather&&current&&daily&&bundle&&meta&&<div className="content-grid">
         <section className="panel current-panel">
-          <div className="panel-top"><div className="location-heading"><MapPin size={15}/><span>{[bundle.location.name,bundle.location.admin2,bundle.location.admin1,bundle.location.country].filter(Boolean).join(', ')}</span><span className="now-pill">NOW</span></div><button className={has(bundle.location)?'favorite-button active':'favorite-button'} onClick={toggleFavorite} aria-label={has(bundle.location)?'Remove saved city':'Save city'} title={has(bundle.location)?'Remove from saved cities':'Save this city'}><Heart size={18} fill={has(bundle.location)?'currentColor':'none'}/></button></div>
+          <div className="panel-top"><div className="location-heading"><MapPin size={15}/><span>{[bundle.location.name,bundle.location.admin2,bundle.location.admin1,bundle.location.country].filter(Boolean).join(', ')}</span>{usingCurrentLocation&&<span className="now-pill location-pill"><LocateFixed size={11}/> YOUR LOCATION</span>}<span className="now-pill">NOW</span></div><button className={has(bundle.location)?'favorite-button active':'favorite-button'} onClick={toggleFavorite} aria-label={has(bundle.location)?'Remove saved city':'Save city'} title={has(bundle.location)?'Remove from saved cities':'Save this city'}><Heart size={18} fill={has(bundle.location)?'currentColor':'none'}/></button></div>
           <div className="current-main"><div><div className="temperature">{tempLabel(current.temperature_2m,unit)}<span>{unit==='celsius'?'C':'F'}</span></div><p className="condition">{meta.label}</p><p className="feels">Feels like {tempLabel(current.apparent_temperature,unit)}</p></div><div className="weather-art"><meta.icon size={100} strokeWidth={1.25} className={`weather-icon ${meta.tone}`}/><span className="art-orbit orbit-a"/><span className="art-orbit orbit-b"/></div></div>
           <div className="high-low"><span><ArrowUp size={14}/> {tempLabel(daily.temperature_2m_max[0],unit)} <small>H</small></span><span><ArrowDown size={14}/> {tempLabel(daily.temperature_2m_min[0],unit)} <small>L</small></span><span className="high-low-separator"/><span><Droplets size={14}/> {current.relative_humidity_2m}% <small>humidity</small></span></div>
           <div className="condition-strip"><div><Wind/><span><b>{Math.round(current.wind_speed_10m)} km/h</b><small>{windDirection(current.wind_direction_10m)} wind</small></span></div><div><Gauge/><span><b>{Math.round(current.pressure_msl)} hPa</b><small>Pressure</small></span></div><div><Eye/><span><b>{Math.round((hourly[0]?.rain??0)*0+((weather.hourly.visibility[0]??0)/1000))} km</b><small>Visibility</small></span></div><div><Sparkles/><span><b>{weather.hourly.uv_index[0]?.toFixed(1)??'—'}</b><small>UV index</small></span></div></div>
